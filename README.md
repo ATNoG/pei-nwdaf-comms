@@ -1,2 +1,2 @@
-# pei-nwdaf-kafka
-Kafka component for Intelligence in Action (NOTE: Far from the final state. Take this as an experimental learning approach)
+# pei-nwdaf-comms
+General communication components related with Intelligence in Action (WIP)
