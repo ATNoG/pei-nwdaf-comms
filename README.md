@@ -15,7 +15,6 @@ Kafka interface component for Intelligence in Action. The goal is to abstract ka
 
 # Run tests
 
-`````
 ```py
 pytest
 ```
