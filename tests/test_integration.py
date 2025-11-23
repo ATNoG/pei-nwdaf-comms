@@ -1,10 +1,10 @@
-# Test suite for end-to-end integration testing of KMiddleware
+# Test suite for end-to-end integration testing of PyKafBridge
 
 import pytest
 import asyncio
 import time
 from kafka import KafkaConsumer, KafkaProducer
-from kmw import KMiddleware
+from kmw import PyKafBridge
 
 
 class TestEndToEndIntegration:
@@ -12,7 +12,7 @@ class TestEndToEndIntegration:
 
     def test_produce_and_consume_single_message(self, ensure_test_topic, test_topic, kafka_bootstrap_servers):
         """Test producing and consuming a single message end-to-end."""
-        kmw = KMiddleware("localhost", "9092", test_topic)
+        kmw = PyKafBridge("localhost", "9092", test_topic)
 
         # Produce a message
         message = "e2e-test-message"
@@ -49,7 +49,7 @@ class TestEndToEndIntegration:
 
     def test_produce_multiple_messages_different_content(self, ensure_test_topic, test_topic, kafka_bootstrap_servers):
         """Test producing multiple messages with different content."""
-        kmw = KMiddleware("localhost", "9092", test_topic)
+        kmw = PyKafBridge("localhost", "9092", test_topic)
 
         messages = [
             "first-message",
@@ -93,7 +93,7 @@ class TestEndToEndIntegration:
 
     def test_producer_without_consumer(self, ensure_test_topic, test_topic):
         """Test that producer works independently without starting consumer."""
-        kmw = KMiddleware("localhost", "9092", test_topic)
+        kmw = PyKafBridge("localhost", "9092", test_topic)
 
         # Producer should work without starting the consumer
         assert kmw.consumer is None
@@ -119,7 +119,7 @@ class TestEndToEndIntegration:
             except TopicAlreadyExistsError:
                 pass
 
-        kmw = KMiddleware("localhost", "9092", *topics)
+        kmw = PyKafBridge("localhost", "9092", *topics)
 
         # Produce to each topic
         for topic in topics:
@@ -157,7 +157,7 @@ class TestEndToEndIntegration:
 
     def test_dynamic_topic_addition_with_production(self, ensure_test_topic, admin_client, kafka_bootstrap_servers):
         """Test adding topics dynamically and producing to them."""
-        kmw = KMiddleware("localhost", "9092", "test-event")
+        kmw = PyKafBridge("localhost", "9092", "test-event")
 
         # Produce to initial topic
         kmw.produce("test-event", "initial-topic-message")
@@ -212,7 +212,7 @@ class TestEndToEndIntegration:
 
     def test_high_volume_message_production(self, ensure_test_topic, test_topic):
         """Test producing a high volume of messages."""
-        kmw = KMiddleware("localhost", "9092", test_topic)
+        kmw = PyKafBridge("localhost", "9092", test_topic)
 
         num_messages = 100
 
@@ -225,7 +225,7 @@ class TestEndToEndIntegration:
 
     def test_message_ordering(self, ensure_test_topic, test_topic, kafka_bootstrap_servers):
         """Test that messages maintain order in a single partition."""
-        kmw = KMiddleware("localhost", "9092", test_topic)
+        kmw = PyKafBridge("localhost", "9092", test_topic)
 
         ordered_messages = [f"ordered-{i}" for i in range(10)]
 
@@ -269,7 +269,7 @@ class TestEndToEndIntegration:
 
     def test_producer_flush_ensures_delivery(self, ensure_test_topic, test_topic, kafka_bootstrap_servers):
         """Test that flushing the producer ensures message delivery."""
-        kmw = KMiddleware("localhost", "9092", test_topic)
+        kmw = PyKafBridge("localhost", "9092", test_topic)
 
         message = "flush-test-message"
         kmw.produce(test_topic, message)
@@ -306,7 +306,7 @@ class TestEndToEndIntegration:
 
     def test_middleware_stop_closes_connections(self, ensure_test_topic, test_topic):
         """Test that stop() properly closes all connections."""
-        kmw = KMiddleware("localhost", "9092", test_topic)
+        kmw = PyKafBridge("localhost", "9092", test_topic)
 
         # Produce a message to ensure connections are active
         kmw.produce(test_topic, "test-message")
@@ -319,7 +319,7 @@ class TestEndToEndIntegration:
 
     def test_unicode_message_end_to_end(self, ensure_test_topic, test_topic, kafka_bootstrap_servers):
         """Test end-to-end flow with unicode messages."""
-        kmw = KMiddleware("localhost", "9092", test_topic)
+        kmw = PyKafBridge("localhost", "9092", test_topic)
 
         unicode_messages = [
             "Hello 世界",
@@ -361,7 +361,7 @@ class TestEndToEndIntegration:
 
     def test_empty_and_whitespace_messages(self, ensure_test_topic, test_topic, kafka_bootstrap_servers):
         """Test producing and consuming empty and whitespace messages."""
-        kmw = KMiddleware("localhost", "9092", test_topic)
+        kmw = PyKafBridge("localhost", "9092", test_topic)
 
         special_messages = ["", "   ", "\n", "\t", "  \n\t  "]
 
@@ -377,7 +377,7 @@ class TestEndToEndIntegration:
 
     def test_concurrent_production_to_same_topic(self, ensure_test_topic, test_topic):
         """Test concurrent message production to the same topic."""
-        kmw = KMiddleware("localhost", "9092", test_topic)
+        kmw = PyKafBridge("localhost", "9092", test_topic)
 
         # Rapidly produce messages
         for i in range(50):
@@ -391,7 +391,7 @@ class TestEndToEndIntegration:
         """Test producing and consuming JSON-formatted string messages."""
         import json
 
-        kmw = KMiddleware("localhost", "9092", test_topic)
+        kmw = PyKafBridge("localhost", "9092", test_topic)
 
         data = {
             "event": "user_login",
@@ -427,7 +427,7 @@ class TestEndToEndIntegration:
                     try:
                         decoded = record.value.decode()
                         parsed = json.loads(decoded)
-                        if parsed.get("event") == "user_login":
+                        if isinstance(parsed, dict) and parsed.get("event") == "user_login":
                             found = True
                             assert parsed["user_id"] == 12345
                             break

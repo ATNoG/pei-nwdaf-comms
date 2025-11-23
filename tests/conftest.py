@@ -8,7 +8,7 @@ from kafka.errors import TopicAlreadyExistsError
 import sys
 import os
 
-from src.kmw import KMiddleware
+from src.kmw import PyKafBridge
 
 # Add src directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
@@ -71,8 +71,8 @@ def ensure_test_topic(admin_client, test_topic):
 
 @pytest.fixture(scope="function")
 def kmiddleware(kafka_hostname, kafka_port, test_topic):
-    """Create a KMiddleware instance for testing."""
-    middleware = KMiddleware(kafka_hostname, kafka_port, test_topic)
+    """Create a PyKafBridge instance for testing."""
+    middleware = PyKafBridge(kafka_hostname, kafka_port, test_topic)
     yield middleware
     # Cleanup
     if middleware._running:
@@ -81,8 +81,8 @@ def kmiddleware(kafka_hostname, kafka_port, test_topic):
 
 @pytest.fixture(scope="function")
 def kmiddleware_no_topics(kafka_hostname, kafka_port):
-    """Create a KMiddleware instance without topics."""
-    middleware = KMiddleware(kafka_hostname, kafka_port)
+    """Create a PyKafBridge instance without topics."""
+    middleware = PyKafBridge(kafka_hostname, kafka_port)
     yield middleware
     # Cleanup
     if middleware._running:

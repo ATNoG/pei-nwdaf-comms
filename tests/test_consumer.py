@@ -1,9 +1,9 @@
-# Test suite for KMiddleware consumer functionality
+# Test suite for PyKafBridge consumer functionality
 
 import pytest
 import asyncio
 import time
-from kmw import KMiddleware
+from kmw import PyKafBridge
 
 
 class TestConsumerInitialization:
@@ -61,7 +61,7 @@ class TestConsumerTopicSubscription:
         """Test that adding a topic updates consumer subscription if consumer exists."""
         from kafka import KafkaConsumer
 
-        kmw = KMiddleware("localhost", "9092", "test-event")
+        kmw = PyKafBridge("localhost", "9092", "test-event")
 
         # Manually create consumer
         bootstrap_servers = f'{kmw._hostname}:{kmw._port}'
@@ -82,7 +82,7 @@ class TestConsumerTopicSubscription:
         """Test that extending topics updates consumer subscription if consumer exists."""
         from kafka import KafkaConsumer
 
-        kmw = KMiddleware("localhost", "9092", "test-event")
+        kmw = PyKafBridge("localhost", "9092", "test-event")
 
         # Manually create consumer
         bootstrap_servers = f'{kmw._hostname}:{kmw._port}'
@@ -310,7 +310,7 @@ class TestConsumerIntegration:
         """Test end-to-end message production and consumption."""
         from kafka import KafkaConsumer
 
-        kmw = KMiddleware("localhost", "9092", test_topic)
+        kmw = PyKafBridge("localhost", "9092", test_topic)
 
         # Produce a message
         test_message = "integration-test-message"

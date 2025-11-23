@@ -8,8 +8,8 @@ Kafka interface component for Intelligence in Action. The goal is to abstract ka
 - [ ] Add a Dockerfile (so far it's feasible in a single command but further configuration may be required)
 
 # Usage
-0. (For now) run a Kafka container with `docker run -p 9092:9092 apache/kafka:4.1.1` (be sure to pull the image first)
-1. Import the KMiddleware class and instantiate with the desired topics (or add more later)
+0. (For now) run a Kafka container with `docker run -p 9092:9092 apache/kafka:4.1.1` (be sure to pull the image first: `docker pull apache/kafka:4.1.1`)
+1. Import the PyKafBridge class and instantiate with the desired topics (or add more later)
 2. Start the object with `.start()`
 3. While messages are stored in the object's data structures, you may run `produce(topic: str)` to send any sort of event to Kafka
 

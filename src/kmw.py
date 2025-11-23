@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.DEBUG,
 logger = logging.getLogger(__name__)
 
 # TODO: Analyze whether multiprocessing would be a better choice
-class KMiddleware():
+class PyKafBridge():
     def __init__(self, hostname: str, port: str, *topics):
         self._hostname = hostname
         self._port = port

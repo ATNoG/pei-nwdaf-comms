@@ -1,14 +1,14 @@
-# Test suite for KMiddleware producer functionality
+# Test suite for PyKafBridge producer functionality
 
 import pytest
 import time
 from kafka import KafkaConsumer
 from kafka.errors import KafkaTimeoutError
-from kmw import KMiddleware
+from kmw import PyKafBridge
 
 
 class TestProducer:
-    """Test cases for KMiddleware message production."""
+    """Test cases for PyKafBridge message production."""
 
     def test_produce_message_to_topic(self, kmiddleware, ensure_test_topic, test_topic, kafka_bootstrap_servers):
         """Test producing a message to a topic."""

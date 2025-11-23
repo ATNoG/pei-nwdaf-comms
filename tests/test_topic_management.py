@@ -1,11 +1,11 @@
-# Test suite for KMiddleware topic management functionality
+# Test suite for PyKafBridge topic management functionality
 
 import pytest
-from kmw import KMiddleware
+from kmw import PyKafBridge
 
 
 class TestTopicManagement:
-    """Test cases for adding and managing topics in KMiddleware."""
+    """Test cases for adding and managing topics in PyKafBridge."""
 
     def test_add_topic_to_empty_middleware(self, kmiddleware_no_topics):
         """Test adding a topic to middleware with no initial topics."""
