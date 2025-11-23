@@ -1,5 +1,5 @@
-# pei-nwdaf-kafka
-Kafka interface component for Intelligence in Action. The goal is to abstract kafka-related logic from other components to ease communication.
+# pei-nwdaf-comms
+General communication components related to Intelligence in Action (WIP)
 
 # TODO:
 
