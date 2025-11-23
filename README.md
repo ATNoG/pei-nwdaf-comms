@@ -1,2 +1,2 @@
 # pei-nwdaf-comms
-General communication components related with Intelligence in Action (WIP)
+General communication components related to Intelligence in Action (WIP)
