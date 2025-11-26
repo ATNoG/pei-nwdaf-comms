@@ -178,6 +178,7 @@ class PyKafBridge():
 
                         data = {
                             'offset': contents.offset,
+                            'topic': contents.topic,
                             'content': contents.value.decode(),
                             'timestamp': contents.timestamp,
                         }
