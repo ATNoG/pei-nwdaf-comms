@@ -45,7 +45,7 @@ class PyKafBridge():
         self.topic_binds = dict()
         self._consumer_data = {topic: list() for topic in self._topics}
 
-        self.last_consumed: str
+        self._last_consumed = dict()
 
         # TODO: See if we use JSON or not (changes implementation slightly)
         boostrap_server = f'{self._hostname}:{self._port}'
@@ -58,6 +58,11 @@ class PyKafBridge():
         self._running = False
 
         self._debug_label = debug_label
+
+    def last_consumed(self, topic: str):
+        if self._last_consumed.get(topic):
+            return self._last_consumed[topic]
+        return -1
 
     def add_topic_and_subtopic(self, parent: str):
         pat = f"\\.?{parent}(\\..*)?"
@@ -152,6 +157,7 @@ class PyKafBridge():
         return data if data else {}
 
     # TODO:
+    # EXTRA: offset behaviour must be tracked
     async def consume(self) -> None:
         """ Consume events from subscribed topics. (WIP) """
         if not self.consumer:
@@ -182,6 +188,7 @@ class PyKafBridge():
                                 data = func(data)
 
                         self._consumer_data[topic].append(data)
+                        self._last_consumed[topic] = data['offset']
                 # logger.info(f"msg: {msg}")
                 # logger.debug(f"data: {self._consumer_data}")
 
@@ -237,6 +244,8 @@ if __name__ == '__main__':
 
         for d in data:
             logger.debug(f'{d}')
+
+        logger.debug(pk1.last_consumed('test-event'))
 
         await pk1.stop()
         await pk2.stop()
