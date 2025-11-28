@@ -123,7 +123,7 @@ class PyKafBridge():
             self.topic_binds[topic] = [func]
 
     @_update_topics
-    def add_topics_regex(self, pat: str) -> None:
+    def add_topics_regex(self, pat: str, bind: Callable = None) -> None:
         if self.consumer:
             cluster_metadata = self.consumer.list_topics()
             matching_topics = [topic for topic in cluster_metadata.topics if re.search(pat, topic)]
@@ -144,7 +144,7 @@ class PyKafBridge():
                     self._consumer_data[topic] = list()
 
     @_update_topics
-    def add_topic(self, topic: str) -> None:
+    def add_topic(self, topic: str, bind: Callable = None) -> None:
         if topic != '' and topic[0] == '^':
             logging.error("Regex is not allowed in this method!")
             return
@@ -156,16 +156,23 @@ class PyKafBridge():
             else:
                 self.consumer.subscribe([topic])
 
+            if bind:
+                self.bind_topic(topic, bind)
+
         self._topics.add(topic)
         if topic not in self._consumer_data:
             self._consumer_data[topic] = list()
 
     @_update_topics
-    def add_n_topics(self, topics: Iterable) -> None:
+    def add_n_topics(self, topics: Iterable, bind: Callable = None) -> None:
         if self.consumer:
             if topics is not None:
                 self._topics.update(topics)
                 self.consumer.subscribe(list(self._topics))
+
+            if bind:
+                for topic in topics:
+                    self.bind_topic(topic, bind)
 
         self._topics.update(topics)
         for topic in topics:
