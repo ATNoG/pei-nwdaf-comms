@@ -1,3 +1,2 @@
-pytest>=7.4.0
-pytest-asyncio>=0.21.0
-kafka_python==2.3.0
+confluent_kafka==2.12.2
+pytest==9.0.1
