@@ -129,6 +129,8 @@ class PyKafBridge():
             for topic in matching_topics:
                 if topic not in self._consumer_data:
                     self._consumer_data[topic] = list()
+                if bind:
+                    self.bind_topic(topic, bind)
 
     @_real_topic
     @_update_topics
@@ -157,6 +159,8 @@ class PyKafBridge():
             for topic in matching_topics:
                 if topic not in self._consumer_data:
                     self._consumer_data[topic] = list()
+                if bind:
+                    self.bind_topic(topic, bind)
 
     @_real_topic
     @_update_topics
@@ -179,6 +183,9 @@ class PyKafBridge():
         if topic not in self._consumer_data:
             self._consumer_data[topic] = list()
 
+        if bind:
+            self.bind_topic(topic, bind)
+
     @_real_topic
     @_update_topics
     def add_n_topics(self, topics: Iterable, bind: Callable = None) -> None:
@@ -195,6 +202,10 @@ class PyKafBridge():
         for topic in topics:
             if topic not in self._consumer_data:
                 self._consumer_data[topic] = list()
+
+            if bind:
+                for topic in topics:
+                    self.bind_topic(topic, bind)
 
     def metrics(self, topic=None) -> dict:
         """ Get consumer metrics """
