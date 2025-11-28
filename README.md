@@ -14,9 +14,10 @@ General communication components related to Intelligence in Action (WIP)
     2. To describe a topic run `topic.sh CONTAINER TOPIC -l`
     3. To remove a topic run `topic.sh CONTAINER TOPIC -r`
 2. Import the PyKafBridge class and instantiate with the desired topics (or add more later)
-3. Start the consumer with `.start()`
+3. Start the consumer with `.start_consumer()`, which is blocking until the connection is established and ready to receive messages, to prevent data loss
 4. Whilst messages are stored in the class, you may run `.produce(topic: str)` to send any sort of event to Kafka
 5. To get messages received on subscribed topics, run `.get_topic(topic_name: str)`
+6. Ensure both producer and consumer instantes close gracefully (e.g. all messages have been flushed) by running `close()`
 
 **Note:** You may bind functions to topics so their contents are automatically transformed.
 Those binding functions must respect the following structure:
