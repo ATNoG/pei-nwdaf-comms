@@ -80,6 +80,20 @@ class PyKafBridge():
             return self._last_consumed[topic]
         return -1
 
+    def _real_topic(topic_action):
+        def checker(*args, **kwargs):
+            _self = args[0]
+            topic = args[1]
+
+            cluster_metadata = _self._admin_client.list_topics()
+
+            if topic not in cluster_metadata.topics:
+                logging.error(f"Topic {topic} does not exist in the target Kafka instance!")
+                return None
+
+            return topic_action(*args, **kwargs)
+        return checker
+
     def _update_topics(adder):
         def checker(*args, **kwargs):
             topic = args[1]  # the first one is self
@@ -92,6 +106,7 @@ class PyKafBridge():
             return adder(*args, **kwargs)
         return checker
 
+    @_real_topic
     @_update_topics
     def add_topic_and_subtopics(self, parent: str, bind: Callable = None):
         pat = f"\\.?{parent}(\\..*)?"
@@ -115,6 +130,7 @@ class PyKafBridge():
                 if topic not in self._consumer_data:
                     self._consumer_data[topic] = list()
 
+    @_real_topic
     @_update_topics
     def bind_topic(self, topic: str, func: Callable):
         if self.topic_binds.get(topic):
@@ -122,27 +138,27 @@ class PyKafBridge():
         else:
             self.topic_binds[topic] = [func]
 
+    @_real_topic
     @_update_topics
     def add_topics_regex(self, pat: str, bind: Callable = None) -> None:
-        if self.consumer:
-            cluster_metadata = self.consumer.list_topics()
-            matching_topics = [topic for topic in cluster_metadata.topics if re.search(pat, topic)]
-            if matching_topics:
-                self._topics.update(matching_topics)
-                self.consumer.subscribe(list(self._topics))
-                for topic in matching_topics:
-                    if topic not in self._consumer_data:
-                        self._consumer_data[topic] = list()
-                    if bind:
-                        self.bind_topic(topic, bind)
-        else:
-            cluster_metadata = self._admin_client.list_topics()
-            matching_topics = [topic for topic in cluster_metadata.topics if re.search(pat, topic)]
+        cluster_metadata = self._admin_client.list_topics()
+        matching_topics = [topic for topic in cluster_metadata.topics if re.search(pat, topic)]
+        if matching_topics:
             self._topics.update(matching_topics)
+
+        if self.consumer:
+            self.consumer.subscribe(list(self._topics))
+            for topic in matching_topics:
+                if topic not in self._consumer_data:
+                    self._consumer_data[topic] = list()
+                if bind:
+                    self.bind_topic(topic, bind)
+        else:
             for topic in matching_topics:
                 if topic not in self._consumer_data:
                     self._consumer_data[topic] = list()
 
+    @_real_topic
     @_update_topics
     def add_topic(self, topic: str, bind: Callable = None) -> None:
         if topic != '' and topic[0] == '^':
@@ -163,6 +179,7 @@ class PyKafBridge():
         if topic not in self._consumer_data:
             self._consumer_data[topic] = list()
 
+    @_real_topic
     @_update_topics
     def add_n_topics(self, topics: Iterable, bind: Callable = None) -> None:
         if self.consumer:
@@ -207,9 +224,23 @@ class PyKafBridge():
 
     async def start_consumer(self) -> None:
         """ Initialize consumer and start the event loop. Blocks until consumer is ready. """
+
         if not self._topics:
             logger.warning("No topics to subscribe to")
             return
+
+        cluster_metadata = self._admin_client.list_topics()
+        diff = set(self._topics) - set(cluster_metadata.topics)
+
+        if diff:
+            for topic in diff:
+                logging.error(f"Topic {topic} does not exist in the target Kafka instance!")
+
+            self._topics -= diff
+
+            if not self._topics:
+                logging.error("NO TOPICS EXIST IN THE KAFKA INSTANCE! ABORTING...")
+                return None
 
         self.consumer = Consumer(self._consumer_config)
         self.consumer.subscribe(list(self._topics))
@@ -318,6 +349,7 @@ class PyKafBridge():
             logger.error(f"Error in consumer task: {e}")
 
     # TODO: May use transactions in specific cases
+    @_real_topic
     def produce(self, topic: str, message: str) -> bool:
         """ Send an event. Using str for now for simplicity. Returns true on success """
         try:
@@ -349,7 +381,7 @@ if __name__ == '__main__':
         pk1 = PyKafBridge('test-event')
         pk2 = PyKafBridge()
 
-        await pk1.start()
+        await pk1.start_consumer()
 
         pk2.produce('test-event', 'MESSAGE1')
         pk2.produce('test-event', 'MESSAGE2')
