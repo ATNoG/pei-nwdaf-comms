@@ -87,9 +87,14 @@ class PyKafBridge():
 
             cluster_metadata = _self._admin_client.list_topics()
 
-            if topic not in cluster_metadata.topics:
-                logging.error(f"Topic {topic} does not exist in the target Kafka instance!")
-                return None
+            if isinstance(topic, str):
+                topic = [topic]
+
+            print(type(topic))
+            for t in topic:
+                if t not in cluster_metadata.topics:
+                    logging.error(f"Topic {t} does not exist in the target Kafka instance!")
+                    return None
 
             return topic_action(*args, **kwargs)
         return checker
@@ -97,12 +102,18 @@ class PyKafBridge():
     def _update_topics(adder):
         def checker(*args, **kwargs):
             topic = args[1]  # the first one is self
-            if topic == '':
-                logging.error("Empty topics are not allowed!")
-                return None
-            if topic[0] == '^':
-                logging.error("The circumflex accent is not allowed in the beginning of the topic name!")
-                return None
+
+            if isinstance(topic, str):
+                topic = [topic]
+
+            print(type(topic))
+            for t in topic:
+                if topic == '':
+                    logging.error("Empty topics are not allowed!")
+                    return None
+                if topic[0] == '^':
+                    logging.error("The circumflex accent is not allowed in the beginning of the topic name!")
+                    return None
             return adder(*args, **kwargs)
         return checker
 
