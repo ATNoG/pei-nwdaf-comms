@@ -4,7 +4,7 @@ FROM nginx:alpine
 RUN rm /etc/nginx/conf.d/default.conf
 
 COPY nginx.conf /etc/nginx/nginx.conf
-COPY default.conf /etc/nginx/conf.d/default.conf
+COPY default.conf /etc/nginx/templates/default.conf.template
 
 RUN mkdir -p /var/cache/nginx && \
     mkdir -p /var/log/nginx && \
