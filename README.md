@@ -1,46 +1,127 @@
 # pei-nwdaf-comms
-General communication components related to Intelligence in Action (WIP)
 
-# Kafka
+> Project for PEI evaluation 25/26
 
-## TODO:
+## Overview
 
-- [ ] Create a protocol for communication between components via Kafka
+General communication infrastructure components for the NWDAF (Network Data Analytics Function) system. Provides Kafka abstraction layer and reverse proxy configuration for inter-service communication within the "Intelligence in Action" platform.
 
+## Technologies
+
+- **Apache Kafka** 4.1.1 - Distributed event streaming
+- **Python** - Core application language
+- **Confluent Kafka** 2.12.2 - Python Kafka client library
+- **AsyncIO** - Python async/await framework for non-blocking operations
+- **Nginx** - Alpine-based reverse proxy server
+- **Docker** - Containerization
+- **pytest** - Testing framework
+
+## Components
+
+### 1. Kafka Module (`/kafka`)
+
+**PyKafBridge** - Python abstraction layer providing simplified Kafka producer/consumer functionality
+
+**Features**:
+- Async-first design using Python asyncio
+- Dynamic topic subscription and pattern-based topic discovery
+- Message transformation through topic binding functions
+- Offset tracking and partition assignment management
+- Graceful consumer/producer lifecycle management
+- Built-in error handling and logging
+- Multiple consumer groups support for independent message consumption
+
+**Message Structure**:
+| Field | Type | Description |
+|-------|------|-------------|
+| `topic` | `string` | The topic it belongs to |
+| `offset` | `int` | Message order identifier within partition |
+| `content` | `string` | The actual message |
+| `timestamp` | `int` | Message timestamp |
+
+### 2. Nginx Module (`/nginx`)
+
+**API Gateway** - Configured as reverse proxy routing to backend services
+
+**Routes**:
+- Dashboard Backend (root `/`)
+- ML API (`/api/ml/`)
+- Data Ingestion API (`/api/data-ingestion/`)
+- Keycloak authentication (planned)
+- Policy API (planned)
+- Decision API (planned)
+
+**Features**:
+- Security headers (XSS protection, frame options, CSP)
+- Gzip compression enabled
+- Alpine-based lightweight container
+- Optimized buffer configurations
+- Health check endpoint
 
 ## Usage
-1. Run a Kafka container with `docker run -p 9092:9092 apache/kafka:4.1.1` (be sure to pull the image first: `docker pull apache/kafka:4.1.1`)*
-    1. To create a topic run `topic.sh CONTAINER TOPIC -c`
-    2. To describe a topic run `topic.sh CONTAINER TOPIC -l`
-    3. To remove a topic run `topic.sh CONTAINER TOPIC -r`
-2. Import the PyKafBridge class and instantiate with the desired topics (or add more later)
-3. Start the consumer with `.start_consumer()`, which is blocking until the connection is established and ready to receive messages, to prevent data loss
-4. Whilst messages are stored in the class, you may run `.produce(topic: str)` to send any sort of event to Kafka
-5. To get messages received on subscribed topics, run `.get_topic(topic_name: str)`
-6. Ensure both producer and consumer instantes close gracefully (e.g. all messages have been flushed) by running `close()`
 
-**Note:** You may bind functions to topics so their contents are automatically transformed.
-Those binding functions must respect the following structure:
+### Kafka
 
-```py
-def f(x: dict):
-    # Do something with x
-    return x  # Whether it was changed or not!
+1. Run Kafka container:
+   ```bash
+   docker run -p 9092:9092 apache/kafka:4.1.1
+   ```
+
+2. Topic management:
+   ```bash
+   topic.sh CONTAINER TOPIC -c  # Create topic
+   topic.sh CONTAINER TOPIC -l  # Describe topic
+   topic.sh CONTAINER TOPIC -r  # Remove topic
+   ```
+
+3. Import and use PyKafBridge:
+   ```python
+   from kmw import PyKafBridge
+
+   # Instantiate with desired topics
+   bridge = PyKafBridge(topics=["my-topic"])
+
+   # Start consumer (blocking until ready)
+   bridge.start_consumer()
+
+   # Produce messages
+   bridge.produce(topic="my-topic", message="data")
+
+   # Consume messages
+   messages = bridge.get_topic("my-topic")
+
+   # Close gracefully
+   bridge.close()
+   ```
+
+4. Topic binding for message transformation:
+   ```python
+   def transform(x: dict):
+       # Transform message content
+       return x
+
+   bridge.bind_topic("my-topic", transform)
+   ```
+
+## Testing
+
+Pytest suite covering:
+- Single consumer/producer scenarios
+- Multiple consumers with single producer
+- Message transformation via topic bindings
+- Multiple producers with single consumer
+
+```bash
+pytest tests/
 ```
 
-Then do `.bind_topic(topic, func)`
+## Development Status
 
-`x` is a **dictionary** with some of the data fetched from the Kafka event:
+- **Kafka component**: Core functionality complete, protocol standardization pending
+- **Nginx component**: Container ready, awaiting full pipeline implementation for inter-component communication
 
-| Field       | Type   | Description                                  |
-|-------------|--------|----------------------------------------------|
-| `topic`       | `string` | The topic it belongs to                      |
-| `offset`      | `int`    | Identifier for the order of messages within a topic's partition |
-| `content`     | `string` | The actual message                           |
-| `timestamp`   | `int`    | Timestamp of the message                              |
+## TODO
 
-Topic partitions are to be analyzed in further development, along with an established protocol for components to communicate with eachother.
-
-# Nginx
-
-Nginx's container is ready yet **waiting for further pipeline implementation** to actually interact with the components (as in reverse-proxying)
+- Create protocol for communication between components via Kafka
+- Implement full reverse proxy pipeline
+- Complete Keycloak integration
