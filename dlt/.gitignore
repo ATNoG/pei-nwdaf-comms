@@ -7,12 +7,15 @@ fabric-network/channel-artifacts/
 # ── Chaincode package IDs written by deploy-chaincode.sh ──────────────────────
 fabric-network/.env
 
-# ── Java / Gradle build outputs ───────────────────────────────────────────────
-fabric-client/build/
-chaincode/build/
-.gradle/
+# ── Java / Gradle build and IDE outputs ───────────────────────────────────────
 **/build/
 **/.gradle/
+**/bin/
+
+# Stray compiled class files and JVM crash logs
+*.class
+hs_err_pid*
+replay_pid*
 
 # ── Python virtualenvs / caches ───────────────────────────────────────────────
 dlt-package/.venv/
@@ -20,28 +23,3 @@ dlt-package/**/__pycache__/
 dlt-package/**/*.pyc
 dlt-package/dist/
 dlt-package/*.egg-info/
-
-# Compiled class file
-*.class
-
-# Log file
-*.log
-
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
-*.jar
-*.war
-*.nar
-*.ear
-*.zip
-*.tar.gz
-*.rar
-
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
