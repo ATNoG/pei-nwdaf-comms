@@ -1,0 +1,11 @@
+server:
+  port: 8080
+
+fabric:
+  peer-endpoint: ${FABRIC_PEER_ENDPOINT:peer0.nwdaf.local:7051}
+  analytics-channel: ${FABRIC_ANALYTICS_CHANNEL:analytics-channel}
+  inference-channel: ${FABRIC_INFERENCE_CHANNEL:inference-channel}
+  msp-id: ${FABRIC_MSP_ID:NWDAFMSP}
+  msp-cert-path: ${FABRIC_MSP_CERT_PATH}
+  msp-key-path: ${FABRIC_MSP_KEY_PATH}
+  tls-cert-path: ${FABRIC_TLS_CERT_PATH}
