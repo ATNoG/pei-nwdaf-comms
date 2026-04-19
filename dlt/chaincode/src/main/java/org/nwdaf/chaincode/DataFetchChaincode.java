@@ -79,6 +79,11 @@ public final class DataFetchChaincode implements ContractInterface {
         return runRichQuery(ctx, query);
     }
 
+    @Transaction(intent = Transaction.TYPE.EVALUATE)
+    public String getAllFetches(final Context ctx) {
+        return runRichQuery(ctx, "{\"selector\":{}}");
+    }
+
     private String runRichQuery(final Context ctx, final String query) {
         QueryResultsIterator<KeyValue> results = ctx.getStub().getQueryResult(query);
         List<DataFetchRecord> records = new ArrayList<>();

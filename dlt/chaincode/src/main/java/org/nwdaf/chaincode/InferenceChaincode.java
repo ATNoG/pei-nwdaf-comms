@@ -84,6 +84,11 @@ public final class InferenceChaincode implements ContractInterface {
         return runRichQuery(ctx, query);
     }
 
+    @Transaction(intent = Transaction.TYPE.EVALUATE)
+    public String getAllInferences(final Context ctx) {
+        return runRichQuery(ctx, "{\"selector\":{}}");
+    }
+
     // Returns the inference record JSON — the sidecar fetches the linked
     // DataFetch record from analytics-channel separately (cross-channel reads
     // are not permitted within chaincode itself).

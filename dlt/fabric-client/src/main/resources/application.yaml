@@ -1,6 +1,13 @@
 server:
   port: 8080
 
+dlt:
+  debug: ${DLT_DEBUG:false}
+
+springdoc:
+  swagger-ui:
+    path: /docs
+
 fabric:
   peer-endpoint: ${FABRIC_PEER_ENDPOINT:peer0.nwdaf.local:7051}
   analytics-channel: ${FABRIC_ANALYTICS_CHANNEL:analytics-channel}

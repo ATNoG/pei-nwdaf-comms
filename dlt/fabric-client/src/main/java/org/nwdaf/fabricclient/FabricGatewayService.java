@@ -74,6 +74,12 @@ public class FabricGatewayService {
         return new String(result, StandardCharsets.UTF_8);
     }
 
+    public String getAllDataFetches() throws GatewayException {
+        Contract cc = analyticsNetwork.getContract("data-fetch-chaincode");
+        byte[] result = cc.evaluateTransaction("DataFetchChaincode:getAllFetches");
+        return new String(result, StandardCharsets.UTF_8);
+    }
+
     // ── Inference channel: inference records ────────────────────────────────
 
     public String recordInference(String inferenceId, String mlflowRunId, String modelName,
@@ -90,6 +96,12 @@ public class FabricGatewayService {
     public String getInferenceRecord(String inferenceId) throws GatewayException {
         Contract cc = inferenceNetwork.getContract("inference-chaincode");
         byte[] result = cc.evaluateTransaction("InferenceChaincode:getInferenceRecord", inferenceId);
+        return new String(result, StandardCharsets.UTF_8);
+    }
+
+    public String getAllInferences() throws GatewayException {
+        Contract cc = inferenceNetwork.getContract("inference-chaincode");
+        byte[] result = cc.evaluateTransaction("InferenceChaincode:getAllInferences");
         return new String(result, StandardCharsets.UTF_8);
     }
 
