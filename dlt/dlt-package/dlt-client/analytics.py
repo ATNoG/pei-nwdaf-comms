@@ -50,7 +50,7 @@ class AnalyticsChannelClient:
         )
         async with httpx.AsyncClient(timeout=self._timeout) as client:
             r = await client.post(
-                f"{self._base}/data-fetch",
+                f"{self._base}/analytics",
                 json={
                     "requestId": req.request_id,
                     "mlflowRunId": req.mlflow_run_id,
@@ -73,6 +73,6 @@ class AnalyticsChannelClient:
     )
     async def get_record(self, request_id: str) -> dict:
         async with httpx.AsyncClient(timeout=self._timeout) as client:
-            r = await client.get(f"{self._base}/data-fetch/{request_id}")
+            r = await client.get(f"{self._base}/analytics/{request_id}")
             r.raise_for_status()
             return r.json()
