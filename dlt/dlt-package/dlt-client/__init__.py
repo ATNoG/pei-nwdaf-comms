@@ -2,7 +2,7 @@ import os
 from .analytics import AnalyticsChannelClient
 from .inference import InferenceChannelClient
 
-__all__ = ["AnalyticsChannelClient", "InferenceChannelClient", "from_env"]
+__all__ = ["AnalyticsChannelClient", "InferenceChannelClient", "from_env", "analytics_from_env", "inference_from_env"]
 
 
 def from_env():
