@@ -53,12 +53,12 @@ public class FabricGatewayService {
 
     public String recordDataFetch(String requestId, String mlflowRunId, String modelName,
                                    String modelVersion, String queryDescriptor, String dataHash,
-                                   String cellIds, String timeRangeStart, String timeRangeEnd)
+                                   String extraIds, String timeRangeStart, String timeRangeEnd)
                                    throws GatewayException, CommitException {
         Contract cc = analyticsNetwork.getContract("data-fetch-chaincode");
         byte[] result = cc.submitTransaction("DataFetchChaincode:recordFetch",
             requestId, mlflowRunId, modelName, modelVersion,
-            queryDescriptor, dataHash, cellIds, timeRangeStart, timeRangeEnd);
+            queryDescriptor, dataHash, extraIds, timeRangeStart, timeRangeEnd);
         return new String(result, StandardCharsets.UTF_8);
     }
 

@@ -32,8 +32,8 @@ public class DataFetchRecord {
     private String dataHash;
 
     @Property()
-    @JsonProperty("cellIds")
-    private String cellIds;
+    @JsonProperty("extraIds")
+    private String extraIds;
 
     @Property()
     @JsonProperty("timeRangeStart")
@@ -51,7 +51,7 @@ public class DataFetchRecord {
 
     public DataFetchRecord(String requestId, String mlflowRunId, String modelName,
                            String modelVersion, String queryDescriptor, String dataHash,
-                           String cellIds, String timeRangeStart, String timeRangeEnd,
+                           String extraIds, String timeRangeStart, String timeRangeEnd,
                            String timestamp) {
         this.requestId = requestId;
         this.mlflowRunId = mlflowRunId;
@@ -59,7 +59,7 @@ public class DataFetchRecord {
         this.modelVersion = modelVersion;
         this.queryDescriptor = queryDescriptor;
         this.dataHash = dataHash;
-        this.cellIds = cellIds;
+        this.extraIds = extraIds;
         this.timeRangeStart = timeRangeStart;
         this.timeRangeEnd = timeRangeEnd;
         this.timestamp = timestamp;
@@ -71,7 +71,7 @@ public class DataFetchRecord {
     public String getModelVersion()    { return modelVersion; }
     public String getQueryDescriptor() { return queryDescriptor; }
     public String getDataHash()        { return dataHash; }
-    public String getCellIds()         { return cellIds; }
+    public String getExtraIds()         { return extraIds; }
     public String getTimeRangeStart()  { return timeRangeStart; }
     public String getTimeRangeEnd()    { return timeRangeEnd; }
     public String getTimestamp()       { return timestamp; }
