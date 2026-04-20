@@ -1,0 +1,25 @@
+OrdererOrgs:
+  - Name: Orderer
+    Domain: nwdaf.local
+    Specs:
+      - Hostname: orderer
+        SANS:
+          - localhost
+          - 127.0.0.1
+          - ordered.nwdaf.local
+          # - 10.255.28.160
+          - orderer
+PeerOrgs:
+  - Name: NWDAF
+    Domain: nwdaf.local
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - localhost
+        - 127.0.0.1
+        - peer0.nwdaf.local
+        # - 10.255.28.160
+        - peer0
+    Users:
+      Count: 1

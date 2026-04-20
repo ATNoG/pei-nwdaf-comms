@@ -1,0 +1,239 @@
+name: fabric-network
+
+networks:
+  fabric-net:
+    driver: bridge
+
+volumes:
+  orderer-data:
+  peer-data:
+  couchdb-data:
+
+services:
+
+  ca.nwdaf.local:
+    image: hyperledger/fabric-ca:1.5.12
+    container_name: ca.nwdaf.local
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca-nwdaf
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_PORT=7054
+    ports:
+      - "7054:7054"
+    volumes:
+      - ./crypto-config/peerOrganizations/nwdaf.local/ca:/etc/hyperledger/fabric-ca-server
+    networks:
+      - fabric-net
+
+  orderer.nwdaf.local:
+    image: hyperledger/fabric-orderer:2.5.9
+    container_name: orderer.nwdaf.local
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_GENERAL_BOOTSTRAPMETHOD=none
+      - ORDERER_CHANNELPARTICIPATION_ENABLED=true
+      - ORDERER_ADMIN_TLS_ENABLED=true
+      - ORDERER_ADMIN_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_ADMIN_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_ADMIN_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_TLS_CLIENTROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:7053
+      - ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:9443
+    ports:
+      - "7050:7050"
+      - "7053:7053"
+      - "9443:9443"
+    volumes:
+      - ./crypto-config/ordererOrganizations/nwdaf.local/orderers/orderer.nwdaf.local/msp:/var/hyperledger/orderer/msp
+      - ./crypto-config/ordererOrganizations/nwdaf.local/orderers/orderer.nwdaf.local/tls:/var/hyperledger/orderer/tls
+      - orderer-data:/var/hyperledger/production/orderer
+    healthcheck:
+      test: ["CMD", "bash", "-c", "</dev/tcp/localhost/9443"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+    networks:
+      - fabric-net
+
+  couchdb:
+    image: couchdb:3.3.3
+    container_name: couchdb
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=adminpw
+    ports:
+      - "5984:5984"
+    volumes:
+      - couchdb-data:/opt/couchdb/data
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:5984/_up"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - fabric-net
+
+  peer0.nwdaf.local:
+    image: hyperledger/fabric-peer:2.5.9
+    container_name: peer0.nwdaf.local
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=fabric-network_fabric-net
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=false
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_PEER_ID=peer0.nwdaf.local
+      - CORE_PEER_ADDRESS=peer0.nwdaf.local:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.nwdaf.local:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.nwdaf.local:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.nwdaf.local:7051
+      - CORE_PEER_LOCALMSPID=NWDAFMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9444
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+    ports:
+      - "7051:7051"
+      - "9444:9444"
+    volumes:
+      - /var/run/docker.sock:/host/var/run/docker.sock
+      - ./crypto-config/peerOrganizations/nwdaf.local/peers/peer0.nwdaf.local/msp:/etc/hyperledger/fabric/msp
+      - ./crypto-config/peerOrganizations/nwdaf.local/peers/peer0.nwdaf.local/tls:/etc/hyperledger/fabric/tls
+      - peer-data:/var/hyperledger/production
+    depends_on:
+      orderer.nwdaf.local:
+        condition: service_healthy
+      couchdb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "bash", "-c", "</dev/tcp/localhost/9444"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    networks:
+      - fabric-net
+
+  # ── Chaincode services (CCAAS) ────────────────────────────────────────────
+  # Each chaincode runs as a gRPC server; the peer connects to them on demand.
+  # fabric-javaenv was removed in Fabric 2.5 so Docker-build mode is unsupported.
+  data-fetch-chaincode:
+    build:
+      context: ../chaincode
+      dockerfile: Dockerfile
+    container_name: data-fetch-chaincode
+    environment:
+      - CHAINCODE_SERVER_ADDRESS=0.0.0.0:7052
+      - CORE_CHAINCODE_ID_NAME=${DATA_FETCH_CC_ID}
+      - CORE_PEER_ADDRESS=peer0.nwdaf.local:7051
+      - CORE_PEER_TLS_ENABLED=false
+    depends_on:
+      peer0.nwdaf.local:
+        condition: service_healthy
+    networks:
+      - fabric-net
+    profiles:
+      - chaincodes
+
+  inference-chaincode:
+    build:
+      context: ../chaincode
+      dockerfile: Dockerfile
+    container_name: inference-chaincode
+    environment:
+      - CHAINCODE_SERVER_ADDRESS=0.0.0.0:7052
+      - CORE_CHAINCODE_ID_NAME=${INFERENCE_CC_ID}
+      - CORE_PEER_ADDRESS=peer0.nwdaf.local:7051
+      - CORE_PEER_TLS_ENABLED=false
+    depends_on:
+      peer0.nwdaf.local:
+        condition: service_healthy
+    networks:
+      - fabric-net
+    profiles:
+      - chaincodes
+
+  # ── Tools container ────────────────────────────────────────────────────────
+  # Has: Fabric binaries (peer, osnadmin, configtxgen, cryptogen)
+  #      JDK 21 + Gradle for building chaincode
+  # Used by: bootstrap.sh and deploy-chaincode.sh
+  # Never runs as a long-lived daemon — started on demand by the scripts.
+  tools:
+    build:
+      context: ..
+      dockerfile: Dockerfile.tools
+    container_name: fabric-tools
+    environment:
+      - FABRIC_CFG_PATH=/usr/local/fabric/config
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_LOCALMSPID=NWDAFMSP
+      - CORE_PEER_ADDRESS=peer0.nwdaf.local:7051
+      - CORE_PEER_TLS_ROOTCERT_FILE=/crypto/peers/peer0.nwdaf.local/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/crypto/users/Admin@nwdaf.local/msp
+    volumes:
+      # Fabric network config files (configtx.yaml, crypto-config.yaml)
+      - .:/workspace/fabric-network
+      # Chaincode source
+      - ../chaincode:/workspace/chaincode
+      # Crypto material written here by bootstrap, read here by deploy
+      - ./crypto-config/peerOrganizations/nwdaf.local:/crypto
+      # Channel genesis blocks
+      - ./channel-artifacts:/channel-artifacts
+      # Docker socket so the tools container can reach the peer/orderer on the host network
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - fabric-net
+    # Keep it alive only while a command is being run
+    profiles:
+      - tools
+
+  # ── Java sidecar ──────────────────────────────────────────────────────────
+  fabric-client-sidecar:
+    build:
+      context: ../fabric-client
+      dockerfile: Dockerfile
+    container_name: fabric-client-sidecar
+    ports:
+      - "9337:8080"
+    environment:
+      - FABRIC_PEER_ENDPOINT=peer0.nwdaf.local:7051
+      - FABRIC_ORDERER_ENDPOINT=orderer.nwdaf.local:7050
+      - FABRIC_ANALYTICS_CHANNEL=analytics-channel
+      - FABRIC_INFERENCE_CHANNEL=inference-channel
+      - FABRIC_MSP_ID=NWDAFMSP
+      - FABRIC_MSP_CERT_PATH=/crypto/users/Admin@nwdaf.local/msp/signcerts/Admin@nwdaf.local-cert.pem
+      - FABRIC_MSP_KEY_PATH=/crypto/users/Admin@nwdaf.local/msp/keystore/priv_sk
+      - FABRIC_TLS_CERT_PATH=/crypto/peers/peer0.nwdaf.local/tls/ca.crt
+    volumes:
+      - ./crypto-config/peerOrganizations/nwdaf.local:/crypto
+    depends_on:
+      peer0.nwdaf.local:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8080/actuator/health"]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+      start_period: 60s
+    networks:
+      - fabric-net
+    profiles:
+      - sidecar

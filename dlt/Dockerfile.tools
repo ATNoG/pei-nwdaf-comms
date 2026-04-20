@@ -1,0 +1,51 @@
+# Tools container: Hyperledger Fabric CLI binaries + JDK 21 + Gradle
+# Used exclusively by bootstrap.sh and deploy-chaincode.sh.
+# Never runs as a service — invoked on demand via docker compose run.
+
+FROM eclipse-temurin:21-jdk-noble
+
+ARG FABRIC_VERSION=2.5.9
+ARG FABRIC_CA_VERSION=1.5.12
+ARG GRADLE_VERSION=8.13
+
+# ── System deps ───────────────────────────────────────────────────────────────
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    wget \
+    unzip \
+    openssl \
+    python3 \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# ── Gradle ────────────────────────────────────────────────────────────────────
+RUN wget -q "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip" \
+      -O /tmp/gradle.zip \
+    && unzip -q /tmp/gradle.zip -d /opt \
+    && ln -s "/opt/gradle-${GRADLE_VERSION}/bin/gradle" /usr/local/bin/gradle \
+    && rm /tmp/gradle.zip
+
+# ── Hyperledger Fabric binaries ───────────────────────────────────────────────
+# Downloads: peer, orderer, configtxgen, cryptogen, osnadmin, configtxlator
+RUN mkdir -p /usr/local/fabric/bin /usr/local/fabric/config \
+    && curl -sSL "https://github.com/hyperledger/fabric/releases/download/v${FABRIC_VERSION}/hyperledger-fabric-linux-amd64-${FABRIC_VERSION}.tar.gz" \
+       | tar -xz -C /usr/local/fabric \
+    && curl -sSL "https://github.com/hyperledger/fabric-ca/releases/download/v${FABRIC_CA_VERSION}/hyperledger-fabric-ca-linux-amd64-${FABRIC_CA_VERSION}.tar.gz" \
+       | tar -xz -C /usr/local/fabric
+
+ENV PATH="/usr/local/fabric/bin:${PATH}"
+# Fabric tools look for core.yaml / configtx.yaml in FABRIC_CFG_PATH
+# We set it to the bundled sample configs; individual scripts override as needed.
+ENV FABRIC_CFG_PATH=/usr/local/fabric/config
+
+# ── Gradle cache warm-up ──────────────────────────────────────────────────────
+# Pre-download the chaincode dependencies so 'deploy' is fast.
+# We copy only the build files (not src) so this layer is cached independently
+# of source changes.
+WORKDIR /prebuild
+COPY chaincode/build.gradle chaincode/settings.gradle* ./
+# Create a stub src so compileJava resolves deps without real sources
+RUN mkdir -p src/main/java && \
+    gradle dependencies --configuration runtimeClasspath --no-daemon -q || true
+
+WORKDIR /workspace
