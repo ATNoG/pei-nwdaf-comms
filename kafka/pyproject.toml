@@ -1,0 +1,16 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pykafbridge"
+version = "1.1.0"
+authors = [{ name = "Miguel Neto" }]
+dependencies = [
+    "confluent_kafka==2.12.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.0.1",
+]

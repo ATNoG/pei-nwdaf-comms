@@ -37,11 +37,12 @@ logger = logging.getLogger(__name__)
 
 # TODO: Analyze whether multiprocessing would be a better choice
 class PyKafBridge():
-    def __init__(self, *topics, hostname: str = 'localhost', port: str = '9092', debug_label: str = 'PKB'):
+    def __init__(self, *topics, hostname: str = 'localhost', port: str = '9092', debug_label: str = 'PKB', group_id: Optional[str] = None, max_topic_messages: int = 100000):
         self._hostname = hostname
         self._port = port
         self._topics = set(topics)
         self.topic_binds = dict()
+        self._max_messages = max_topic_messages
         self._consumer_data = {topic: list() for topic in self._topics}
 
         self._last_consumed = dict()
@@ -59,7 +60,7 @@ class PyKafBridge():
         # Configure consumer
         consumer_config = {
             'bootstrap.servers': bootstrap_server,
-            'group.id': f'pykafbridge_group_{id(self)}',
+            'group.id': group_id or f'pykafbridge_group_{id(self)}',
             'auto.offset.reset': 'latest',
             'enable.auto.commit': True
         }
@@ -106,12 +107,12 @@ class PyKafBridge():
             if isinstance(topic, str):
                 topic = [topic]
 
-            print(type(topic))
+            # print(type(topic))
             for t in topic:
-                if topic == '':
+                if t == '':
                     logging.error("Empty topics are not allowed!")
                     return None
-                if topic[0] == '^':
+                if t[0] == '^':
                     logging.error("The circumflex accent is not allowed in the beginning of the topic name!")
                     return None
             return adder(*args, **kwargs)
@@ -361,6 +362,8 @@ class PyKafBridge():
                     self._consumer_data[topic] = []
 
                 self._consumer_data[topic].append(data)
+                if self._max_messages and len(self._consumer_data[topic]) > self._max_messages:
+                    self._consumer_data.pop(0)
                 self._last_consumed[topic] = data['offset']
 
                 await asyncio.sleep(0)
