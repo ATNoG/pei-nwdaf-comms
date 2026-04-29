@@ -8,7 +8,6 @@ class DataFetchRequest(BaseModel):
     model_version: str
     query_descriptor: str
     data_hash: str
-    cell_ids: Optional[str] = None
     time_range_start: Optional[str] = None
     time_range_end: Optional[str] = None
 
