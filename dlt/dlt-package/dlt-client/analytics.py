@@ -25,7 +25,6 @@ class AnalyticsChannelClient:
         model_version: str,
         query_params: dict,
         data_payload,           # the raw data returned from Storage
-        cell_ids: str = "",
         time_range_start: str = "",
         time_range_end: str = "",
     ) -> str:
@@ -44,7 +43,6 @@ class AnalyticsChannelClient:
             model_version=model_version,
             query_descriptor=json.dumps(query_params, sort_keys=True, default=str),
             data_hash=data_hash,
-            cell_ids=cell_ids,
             time_range_start=time_range_start,
             time_range_end=time_range_end,
         )
@@ -58,7 +56,6 @@ class AnalyticsChannelClient:
                     "modelVersion": req.model_version,
                     "queryDescriptor": req.query_descriptor,
                     "dataHash": req.data_hash,
-                    "cellIds": req.cell_ids or "",
                     "timeRangeStart": req.time_range_start or "",
                     "timeRangeEnd": req.time_range_end or "",
                 })

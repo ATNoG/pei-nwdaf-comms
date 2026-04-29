@@ -32,7 +32,6 @@ public final class DataFetchChaincode implements ContractInterface {
                                        final String modelVersion,
                                        final String queryDescriptor,
                                        final String dataHash,
-                                       final String extraIds,
                                        final String timeRangeStart,
                                        final String timeRangeEnd) {
         ChaincodeStub stub = ctx.getStub();
@@ -45,7 +44,7 @@ public final class DataFetchChaincode implements ContractInterface {
 
         DataFetchRecord record = new DataFetchRecord(
             requestId, mlflowRunId, modelName, modelVersion,
-            queryDescriptor, dataHash, extraIds, timeRangeStart, timeRangeEnd,
+            queryDescriptor, dataHash, timeRangeStart, timeRangeEnd,
             stub.getTxTimestamp().toString()
         );
 
