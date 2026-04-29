@@ -34,7 +34,6 @@ public class LedgerController {
         @Schema(description = "Model version", example = "3") @NotBlank String modelVersion,
         @Schema(description = "GROQ/descriptor string identifying the query", example = "ue_stats:5g:city=porto") @NotBlank String queryDescriptor,
         @Schema(description = "SHA-256 hash of fetched data", example = "e3b0c44298fc1c149afb") @NotBlank String dataHash,
-        @Schema(description = "Comma-separated cell IDs, nullable", example = "cell-1,cell-2") String extraIds,
         @Schema(description = "ISO-8601 start of time range", example = "2024-01-01T00:00:00Z") String timeRangeStart,
         @Schema(description = "ISO-8601 end of time range", example = "2024-01-02T00:00:00Z") String timeRangeEnd
     ) {}
@@ -54,7 +53,7 @@ public class LedgerController {
         String result = fabric.recordDataFetch(
             req.requestId(), req.mlflowRunId(), req.modelName(), req.modelVersion(),
             req.queryDescriptor(), req.dataHash(),
-            req.extraIds(), req.timeRangeStart(), req.timeRangeEnd());
+            req.timeRangeStart(), req.timeRangeEnd());
         return ResponseEntity.ok(result);
     }
 
