@@ -10,7 +10,7 @@ dependencies = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["dlt-client"]
+packages = ["dlt_client"]
 
 [build-system]
 requires = ["hatchling"]
