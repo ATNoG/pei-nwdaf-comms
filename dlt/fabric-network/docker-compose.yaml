@@ -3,6 +3,8 @@ name: fabric-network
 networks:
   fabric-net:
     driver: bridge
+  nwdaf-network:
+    external: true
 
 volumes:
   orderer-data:
@@ -235,5 +237,6 @@ services:
       start_period: 60s
     networks:
       - fabric-net
+      - nwdaf-network
     profiles:
       - sidecar
