@@ -11,7 +11,7 @@ dependencies = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src"]
+packages = ["src/kmw.py"]
 
 [project.optional-dependencies]
 dev = [
