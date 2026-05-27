@@ -10,6 +10,9 @@ dependencies = [
     "confluent_kafka==2.12.2",
 ]
 
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
 [project.optional-dependencies]
 dev = [
     "pytest==9.0.1",
